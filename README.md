@@ -47,3 +47,10 @@ Backend-AI-Engineering/
 ├── README.md
 ├── swagger.png
 └── .gitignore
+## Response Status Codes
+
+- `200 OK` — Successful GET and PUT requests
+- `201 Created` — Task successfully created
+- `204 No Content` — Task successfully deleted
+- `400 Bad Request` — Invalid or missing task title
+- `404 Not Found` — Task ID does not exist
