@@ -13,3 +13,14 @@ Start the server with:
 👉 **Put the Endpoints section immediately after that Swagger line.**
 
 One small thing: because the README contains a code block, make sure the endpoint table is **outside** the code block. ❤️
+
+## curl -i Example
+
+```text
+HTTP/1.1 200 OK
+date: Sun, 20 Sep 2026 22:31:55 GMT
+server: uvicorn
+content-length: 15
+content-type: application/json
+
+{"status":"ok"}
