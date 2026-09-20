@@ -9,16 +9,22 @@ Start the server with:
 ```powershell
 & "$env:LocalAppData\Programs\Python\Python313\python.exe" -m uvicorn main:app --reload
 
+The API will run at `http://127.0.0.1:8000`.
 
-👉 **Put the Endpoints section immediately after that Swagger line.**
+Swagger UI is available at `http://127.0.0.1:8000/docs`.
 
-One small thing: because the README contains a code block, make sure the endpoint table is **outside** the code block. ❤️
+## Endpoints
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Welcome message |
+| GET | `/health` | Health check |
+| GET | `/tasks` | List all tasks |
+| POST | `/tasks` | Create a task |
+| GET | `/tasks/{task_id}` | Get one task |
+| PUT | `/tasks/{task_id}` | Update a task |
+| DELETE | `/tasks/{task_id}` | Delete a task |
 
 ## curl -i Example
-
-## Swagger UI
-
-![Swagger UI](swagger.png)
 
 ```text
 HTTP/1.1 200 OK
@@ -29,12 +35,6 @@ content-type: application/json
 
 {"status":"ok"}
 
-
-Those three backticks **close the code block**.
-
-Then below it:
-
-```markdown
 ## Swagger UI
 
 ![Swagger UI](swagger.png)
@@ -47,6 +47,7 @@ Backend-AI-Engineering/
 ├── README.md
 ├── swagger.png
 └── .gitignore
+
 ## Response Status Codes
 
 - `200 OK` — Successful GET and PUT requests
