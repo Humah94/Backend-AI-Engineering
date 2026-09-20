@@ -9,6 +9,7 @@ Start the server with:
 ```powershell
 & "$env:LocalAppData\Programs\Python\Python313\python.exe" -m uvicorn main:app --reload
 
+
 The API will run at `http://127.0.0.1:8000`.
 
 Swagger UI is available at `http://127.0.0.1:8000/docs`.
@@ -35,10 +36,14 @@ content-type: application/json
 
 {"status":"ok"}
 
+
 ## Swagger UI
 
 ![Swagger UI](swagger.png)
 
+## Project Structure
+
+```text
 ## Project Structure
 
 ```text
