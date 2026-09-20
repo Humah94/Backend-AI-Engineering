@@ -36,7 +36,8 @@ content-type: application/json
 
 {"status":"ok"}
 
-
+```text
+{"status":"ok"}
 ## Swagger UI
 
 ![Swagger UI](swagger.png)
