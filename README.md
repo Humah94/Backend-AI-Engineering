@@ -38,3 +38,12 @@ Then below it:
 ## Swagger UI
 
 ![Swagger UI](swagger.png)
+
+## Project Structure
+
+```text
+Backend-AI-Engineering/
+├── main.py
+├── README.md
+├── swagger.png
+└── .gitignore
