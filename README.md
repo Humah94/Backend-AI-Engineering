@@ -16,6 +16,10 @@ One small thing: because the README contains a code block, make sure the endpoin
 
 ## curl -i Example
 
+## Swagger UI
+
+![Swagger UI](swagger.png)
+
 ```text
 HTTP/1.1 200 OK
 date: Sun, 20 Sep 2026 22:31:55 GMT
@@ -24,3 +28,13 @@ content-length: 15
 content-type: application/json
 
 {"status":"ok"}
+
+
+Those three backticks **close the code block**.
+
+Then below it:
+
+```markdown
+## Swagger UI
+
+![Swagger UI](swagger.png)
