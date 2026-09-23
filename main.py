@@ -1,9 +1,35 @@
 from fastapi import FastAPI, HTTPException, Response
+import sqlite3
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 app = FastAPI()
+conn = sqlite3.connect("tasks.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    completed BOOLEAN NOT NULL
+)
+""")
+
+conn.commit()
+cursor.execute("SELECT COUNT(*) FROM tasks")
+
+if cursor.fetchone()[0] == 0:
+    cursor.executemany(
+        "INSERT INTO tasks (id, title, completed) VALUES (?, ?, ?)",
+        [
+            (1, "Learn FastAPI", False),
+            (2, "Build my first API", False),
+            (3, "Practice Python", False),
+        ]
+    )
+
+    conn.commit()
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     return JSONResponse(
@@ -27,14 +53,43 @@ def health():
     return {"status": "ok"}
 @app.get("/tasks")
 def get_tasks():
-    return tasks
+    conn = sqlite3.connect("tasks.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, title, completed FROM tasks")
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return [
+        {
+            "id": row[0],
+            "title": row[1],
+            "completed": bool(row[2])
+        }
+        for row in rows
+    ]
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            return task
+    conn = sqlite3.connect("tasks.db")
+    cursor = conn.cursor()
 
-    raise HTTPException(status_code=404, detail="Task not found")
+    cursor.execute(
+        "SELECT id, title, completed FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    return {
+        "id": row[0],
+        "title": row[1],
+        "completed": bool(row[2])
+    }
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate):
     new_task = {
