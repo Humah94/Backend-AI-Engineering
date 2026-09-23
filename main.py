@@ -92,13 +92,30 @@ def get_task(task_id: int):
     }
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate):
-    new_task = {
-        "id": len(tasks) + 1,
-        "title": task.title,
-        "completed": task.completed
+    conn = sqlite3.connect("tasks.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO tasks (title, completed) VALUES (?, ?)",
+        (task.title, task.completed)
+    )
+
+    new_id = cursor.lastrowid
+    conn.commit()
+
+    cursor.execute(
+        "SELECT id, title, completed FROM tasks WHERE id = ?",
+        (new_id,)
+    )
+    row = cursor.fetchone()
+
+    conn.close()
+
+    return {
+        "id": row[0],
+        "title": row[1],
+        "completed": bool(row[2])
     }
-    tasks.append(new_task)
-    return new_task
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, task: TaskCreate):
     for existing_task in tasks:
