@@ -118,18 +118,60 @@ def create_task(task: TaskCreate):
     }
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, task: TaskCreate):
-    for existing_task in tasks:
-        if existing_task["id"] == task_id:
-            existing_task["title"] = task.title
-            existing_task["completed"] = task.completed
-            return existing_task
+    conn = sqlite3.connect("tasks.db")
+    cursor = conn.cursor()
 
-    raise HTTPException(status_code=404, detail="Task not found")
+    cursor.execute(
+        "SELECT id FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+    existing_task = cursor.fetchone()
+
+    if existing_task is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    cursor.execute(
+        "UPDATE tasks SET title = ?, completed = ? WHERE id = ?",
+        (task.title, task.completed, task_id)
+    )
+
+    conn.commit()
+
+    cursor.execute(
+        "SELECT id, title, completed FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+    row = cursor.fetchone()
+
+    conn.close()
+
+    return {
+        "id": row[0],
+        "title": row[1],
+        "completed": bool(row[2])
+    }
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int):
-    for i, task in enumerate(tasks):
-        if task["id"] == task_id:
-            tasks.pop(i)
-            return Response(status_code=204)
+    conn = sqlite3.connect("tasks.db")
+    cursor = conn.cursor()
 
-    raise HTTPException(status_code=404, detail="Task not found")
+    cursor.execute(
+        "SELECT id FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+    existing_task = cursor.fetchone()
+
+    if existing_task is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    cursor.execute(
+        "DELETE FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return Response(status_code=204)
