@@ -3,9 +3,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+import os
+import redis
 import repository
 
 app = FastAPI()
+
+redis_client = redis.from_url(os.getenv("REDIS_URL"))
 
 
 @app.exception_handler(RequestValidationError)
@@ -29,6 +33,10 @@ def home():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+@app.get("/redis-health")
+def redis_health():
+    redis_client.ping()
+    return {"redis": "ok"}
 
 
 @app.get("/tasks")

@@ -86,21 +86,18 @@ The initialization script creates the `tasks` table and provides the three start
 
 ## Repository Layer
 
-The PostgreSQL database operations are separated into:
+For A3, PostgreSQL database operations were moved into `repository.py`.
 
-```text
-repository.py
-```
+The A2 version used SQLite database operations directly in `main.py`, so A3 introduced the repository boundary while preserving the existing API endpoints and CRUD behavior.
 
-The repository handles:
+Repository handles:
+- Reading all tasks
+- Reading a task by ID
+- Creating tasks
+- Updating tasks
+- Deleting tasks
 
-* Reading all tasks
-* Reading a task by ID
-* Creating tasks
-* Updating tasks
-* Deleting tasks
-
-The FastAPI routes in `main.py` call the repository instead of directly executing SQL.
+The FastAPI routes in `main.py` call the repository instead of executing SQL directly.
 
 ## Docker Architecture
 
@@ -168,6 +165,42 @@ The project was updated to include:
 * Environment-based database configuration
 * A PostgreSQL initialization script
 * A persistent Docker volume
+### Redis Stretch
+
+Redis was added to `docker-compose.yml` using the official `redis:7` image.
+
+The FastAPI application connects to Redis using the `REDIS_URL` environment variable:
+
+`redis://redis:6379`
+
+Redis connectivity was tested from inside the application container using `PING`, which returned:
+
+`True`
+
+This confirmed that the FastAPI container can successfully connect to the Redis container.
+### Database Index Stretch
+
+An index was added to the `completed` column:
+
+`idx_tasks_completed`
+
+The query plan was checked with `EXPLAIN ANALYZE` before and after creating the index.
+
+Before the index:
+
+`Seq Scan on tasks`
+
+Execution time: `0.021 ms`
+
+After the index:
+
+`Seq Scan on tasks`
+
+Execution time: `0.017 ms`
+
+PostgreSQL continued using a sequential scan because the seeded table is very small. The index was created successfully, but the query planner determined that scanning the small table was cheaper than using the index.
+
+This demonstrates that PostgreSQL chooses the query plan it estimates to be most efficient rather than automatically using every available index.
 
 ### A3 Dockerfile
 
