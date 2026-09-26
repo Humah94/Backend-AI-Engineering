@@ -1,18 +1,46 @@
 # Task API
 
-A simple CRUD API for managing tasks, built with Python and FastAPI.
+A simple CRUD API for managing tasks, built with Python, FastAPI, PostgreSQL, and Docker.
 
 ## Run the API
 
-Start the server with:
+The application can be run locally or with Docker Compose.
+
+### Run with Docker Compose
+
+Start both the FastAPI application and PostgreSQL database with:
 
 ```powershell
-& "$env:LocalAppData\Programs\Python\Python313\python.exe" -m uvicorn main:app --reload
+docker compose up -d
 ```
 
-The API will run at `http://127.0.0.1:8000`.
+Check the running containers with:
 
-Swagger UI is available at `http://127.0.0.1:8000/docs`.
+```powershell
+docker compose ps
+```
+
+The API will run at:
+
+```text
+http://127.0.0.1:8001
+```
+
+Swagger UI is available at:
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+To stop the containers:
+
+```powershell
+docker compose down
+```
+
+The PostgreSQL data is stored in a Docker named volume, so the data survives a normal container restart or `docker compose down`.
+
+> Do not use `docker compose down -v` unless you intentionally want to delete the PostgreSQL volume and database data.
 
 ## Endpoints
 
@@ -26,6 +54,194 @@ Swagger UI is available at `http://127.0.0.1:8000/docs`.
 | PUT    | `/tasks/{task_id}` | Update a task   |
 | DELETE | `/tasks/{task_id}` | Delete a task   |
 
+## Response Status Codes
+
+* `200 OK` — Successful GET and PUT requests
+* `201 Created` — Task successfully created
+* `204 No Content` — Task successfully deleted
+* `400 Bad Request` — Invalid or missing task title
+* `404 Not Found` — Task ID does not exist
+
+## Database
+
+The application uses PostgreSQL for persistent task storage.
+
+PostgreSQL runs in Docker using the official `postgres:16` image.
+
+The database uses a Docker named volume:
+
+```text
+postgres_data
+```
+
+This volume keeps the database data available when the containers are restarted.
+
+The database table is created by:
+
+```text
+postgres/init.sql
+```
+
+The initialization script creates the `tasks` table and provides the three starter tasks for a fresh database.
+
+## Repository Layer
+
+The PostgreSQL database operations are separated into:
+
+```text
+repository.py
+```
+
+The repository handles:
+
+* Reading all tasks
+* Reading a task by ID
+* Creating tasks
+* Updating tasks
+* Deleting tasks
+
+The FastAPI routes in `main.py` call the repository instead of directly executing SQL.
+
+## Docker Architecture
+
+The application uses two Docker services:
+
+```text
+FastAPI application
+        |
+        v
+   repository.py
+        |
+        v
+PostgreSQL database
+        |
+        v
+  Docker volume
+```
+
+The services are defined in:
+
+```text
+docker-compose.yml
+```
+
+The FastAPI container connects to PostgreSQL using the Docker service name:
+
+```text
+db
+```
+
+The database connection used inside Docker is:
+
+```text
+postgresql://postgres:postgres@db:5432/tasks
+```
+
+## Environment Variables
+
+The local database connection is stored in `.env`.
+
+Example:
+
+```text
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tasks
+```
+
+The real `.env` file is ignored by Git and is not committed to the repository.
+
+A safe template is provided in:
+
+```text
+.env.example
+```
+
+## A3 — Containerize the Stack
+
+For A3, the original SQLite storage was replaced with PostgreSQL running in Docker.
+
+The project was updated to include:
+
+* PostgreSQL 16
+* Docker Compose
+* A PostgreSQL repository layer
+* A Dockerfile for the FastAPI application
+* Environment-based database configuration
+* A PostgreSQL initialization script
+* A persistent Docker volume
+
+### A3 Dockerfile
+
+The FastAPI application is packaged using:
+
+```text
+Dockerfile
+```
+
+The Docker image installs the dependencies from:
+
+```text
+requirements.txt
+```
+
+and starts the application with Uvicorn on port `8001`.
+
+### A3 Docker Compose
+
+The `docker-compose.yml` file starts:
+
+```text
+backend_ai_app
+backend_ai_postgres
+```
+
+The PostgreSQL service has a health check so the FastAPI service waits for the database to become healthy.
+
+### Persistence Test
+
+To verify database persistence:
+
+1. A new task was created through the FastAPI Swagger UI.
+2. The task was stored in PostgreSQL.
+3. Both Docker containers were restarted with:
+
+```powershell
+docker compose restart
+```
+
+4. The API was tested again.
+5. The previously created task was still present.
+
+This confirmed that the PostgreSQL data persisted through a container restart.
+
+## Project Structure
+
+```text
+Backend-AI-Engineering/
+├── main.py
+├── repository.py
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── postgres/
+│   └── init.sql
+├── tasks.db
+├── README.md
+├── swagger.png
+├── database.png
+├── .env.example
+└── .gitignore
+```
+
+## Swagger UI
+
+![Swagger UI](swagger.png)
+
+## Previous SQLite Database Viewer
+
+The SQLite database from the earlier database assignment was inspected using DB Browser for SQLite.
+
+![Database Viewer](database.png)
+
 ## curl -i Example
 
 ```text
@@ -37,35 +253,6 @@ content-type: application/json
 
 {"status":"ok"}
 ```
-
-## Swagger UI
-
-![Swagger UI](swagger.png)
-## Database Viewer
-
-The SQLite database was inspected using DB Browser for SQLite.
-
-![Database Viewer](database.png)
-
-## Project Structure
-
-```text
-Backend-AI-Engineering/
-├── main.py
-├── tasks.db
-├── README.md
-├── swagger.png
-├── database.png
-└── .gitignore
-```
-
-## Response Status Codes
-
-* `200 OK` — Successful GET and PUT requests
-* `201 Created` — Task successfully created
-* `204 No Content` — Task successfully deleted
-* `400 Bad Request` — Invalid or missing task title
-* `404 Not Found` — Task ID does not exist
 
 ## AI vs Me
 
