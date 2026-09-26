@@ -7,7 +7,12 @@ A simple CRUD API for managing tasks, built with Python and FastAPI.
 Start the server with:
 
 ```powershell
-& "$env:LocalAppData\Programs\Python\Python313\python.exe" -m uvicorn main:app --reload --port 8001
+& "$env:LocalAppData\Programs\Python\Python313\python.exe" -m uvicorn main:app --reload
+```
+
+The API will run at `http://127.0.0.1:8000`.
+
+Swagger UI is available at `http://127.0.0.1:8000/docs`.
 
 ## Endpoints
 
@@ -36,16 +41,21 @@ content-type: application/json
 ## Swagger UI
 
 ![Swagger UI](swagger.png)
+## Database Viewer
+
+The SQLite database was inspected using DB Browser for SQLite.
+
+![Database Viewer](database.png)
 
 ## Project Structure
 
 ```text
 Backend-AI-Engineering/
-
 ├── main.py
 ├── tasks.db
 ├── README.md
 ├── swagger.png
+├── database.png
 └── .gitignore
 ```
 
